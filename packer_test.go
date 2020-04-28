@@ -3,7 +3,6 @@ package binpacker
 import (
 	"bytes"
 	"testing"
-
 	"math"
 
 	"github.com/stretchr/testify/assert"
@@ -112,4 +111,24 @@ func TestCombinedPush(t *testing.T) {
 	p.PushUint16(1).PushString("Hi")
 	assert.Equal(t, p.Error(), nil, "Has error.")
 	assert.Equal(t, b.Bytes(), []byte{0, 1, 'H', 'i'}, "combine push error.")
+}
+
+
+func TestPack(t *testing.T) {
+	b := new(bytes.Buffer)
+	p := NewPacker(binary.BigEndian, b)
+	b = p.Pack("nNa5xa1", uint16(1), uint32(2), "Hello", "!")
+	assert.Equal(t, p.Error(), nil, "Has error.")
+	assert.Equal(t, b.Bytes(), []byte{0, 1, 0, 0, 0, 2, 'H', 'e', 'l', 'l', 'o', 0, '!' }, "Pack function error.")
+}
+
+func TestUnpack(t *testing.T) {
+	b := new(bytes.Buffer)
+	p := NewPacker(binary.BigEndian, b)
+	
+	d := bytes.NewBuffer([]byte{0, 1, 0, 0, 0, 2, 'H', 'e', 'l', 'l', 'o'})
+	up := "nfred/Njim/a5shiela"
+	r := p.Unpack(up, d)
+	assert.Equal(t, p.Error(), nil, "Has error.")
+	assert.Equal(t, r, map[string]interface{}{"fred": uint16(1), "jim": uint32(2), "shiela": "Hello"})
 }
